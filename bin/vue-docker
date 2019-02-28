@@ -1,0 +1,13 @@
+#!/bin/bash
+
+for inc in git_dir docker_base_tag
+do
+    if [ "$(type -t $inc)" != "function" ]
+    then
+	. "$(cd "$(dirname "${BASH_SOURCE[0]}")"; pwd)"/$inc
+    fi
+done
+tag="$(docker_base_tag)/vue"
+PROJECT_DIR="$(git_dir "$PWD")"
+PROJECT_SUB_DIR="${PWD#$PROJECT_DIR/}"
+docker run --rm -i --user="$(id -u):$(id -g)" -a stdin -a stdout -v "$PROJECT_DIR":/usr/src/app -w "/usr/src/app/$PROJECT_SUB_DIR" -t "$tag" "$@"

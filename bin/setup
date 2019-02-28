@@ -1,0 +1,65 @@
+#!/bin/bash
+
+for inc in src_dir git_dir docker_base_tag
+do
+    if [ "$(type -t $inc)" != "function" ]
+    then
+	. "$(cd "$(dirname "${BASH_SOURCE[0]}")"; pwd)"/$inc
+    fi
+done
+
+commands () {
+    local container="$1"
+    local command=""
+    shift
+    pushd "$(src_dir)" > /dev/null
+    if [ ! -f .gitignore ]
+    then
+	touch .gitignore
+    fi
+    for command in "$@"
+    do
+        recommand=${command//+/\\+}        
+        /bin/rm -rf "$command"
+        ln -s "$container-command" "$command"
+        chmod +x "$command"
+	if [ -f .gitignore ] && egrep -q "^$recommand"'$' .gitignore
+	then
+	    true
+	else
+            echo "$command" >> .gitignore
+        fi
+    done
+    popd > /dev/null
+}
+
+if ! which docker > /dev/null
+then
+    echo "you must install docker..."
+    exit 1
+fi
+
+ok=()
+bad=()
+for container in vue
+do
+    tag="$(docker_base_tag)/$container"
+    if docker build -t $tag "$(src_dir)/../dockers/$container"
+    then
+	ok+=("$tag")
+    else
+	bad+=("$tag")
+    fi
+done
+
+if [ ${#bad[@]} != 0 ]
+then
+    echo "docker build errors for: ${bad[@]}"
+    exit 1
+else
+    echo "docker build ok: ${ok[@]}"
+fi
+
+commands vue npm yarn vue node
+
+echo "Type ". ./context" in the project base directory ($BASE_DIR) to set your PATH"
