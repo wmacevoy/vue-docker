@@ -1,0 +1,16 @@
+#!/bin/bash
+
+docker_base_tag() {
+    local PARENT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.."; pwd)"
+    local GIT_DIR="$(cd $PARENT_DIR; while [ "$PWD" != "/" -a ! -d .git ] ; do cd .. ; done ; echo $PWD)"
+    local PROJECTS_DIR="$(dirname $GIT_DIR)"
+    local TAG="${PARENT_DIR#"$PROJECTS_DIR/"}"
+    local tag="$(echo $TAG | tr ' [:upper:]' '_[:lower:]')"
+    echo $tag
+}
+export -f docker_base_tag
+
+if [[ "${BASH_SOURCE[0]}" == "${0}" ]]
+then
+    docker_base_tag "$@"
+fi

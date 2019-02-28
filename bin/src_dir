@@ -1,0 +1,11 @@
+#!/bin/bash
+
+src_dir() {
+    (cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+}
+export -f src_dir
+
+if [[ "${BASH_SOURCE[0]}" == "${0}" ]]
+then
+    src_dir "$@"
+fi

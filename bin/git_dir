@@ -1,0 +1,23 @@
+#!/bin/bash
+
+git_dir() {
+    local dir="$1"
+    pushd "$dir" >/dev/null
+    while [ "$PWD" != "/" -a ! -d .git ]
+    do
+	cd ..
+    done
+    if [ "$PWD" = "/" ]
+    then
+	echo $dir
+    else
+	echo $PWD
+    fi
+    popd >/dev/null
+}
+export -f git_dir
+
+if [[ "${BASH_SOURCE[0]}" == "${0}" ]]
+then
+    git_dir "$@"
+fi
